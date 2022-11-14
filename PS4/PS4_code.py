@@ -74,40 +74,25 @@ print('Error on w is:', errs_d[5])
 
 def chisq(p, t, signal, noise):
     y, grad = lorentzian_3lor(p, t)
-    chisquared = np.sum(((signal - y/noise)**2))
-    return chisquared
+    chisq = np.sum(((signal - y/noise)**2))
+    return chisq
 
-def cholesky_decomp(mat):
-    return np.linalg.cholesky(mat)
 
 
 def MCMC(params, cov, nsteps, noise):
     
-    # Get starting χ2 value
     chi_0 = chisq(params, t, d, noise)
     
-    # Initialize chain and χ2 vector
     nparams = len(params)
-    print(nparams)
     chain = np.zeros([nsteps, nparams])
     chi_vec = np.zeros(nsteps)
     
-    # Track how many trials get accepted. Expect 25%.
-    accepted_counter = 0
+    counts = 0
     
-    # Get cholesky decomposition
     cholesky_mat = np.linalg.cholesky(cov)
 
-    
-    # Begin chain
     for i in range(nsteps):
 
-        if i == 0:
-            print('Starting!')
-
-        if i == 1:
-            print('i = 1')
-       
         if i == int(nsteps/4):
             print('25% Complete.')
 
@@ -118,11 +103,11 @@ def MCMC(params, cov, nsteps, noise):
             print('75% Complete.')
             
             
-        dpar = cholesky_mat@np.random.randn(nparams)
+        dparams = cholesky_mat@np.random.randn(nparams)
 
         # Update parameters
 
-        trial_params = params + dpar
+        trial_params = params + dparams
         trial_chisq = chisq(trial_params, t, d, noise)
         
         # Compute change in χ2
@@ -134,7 +119,7 @@ def MCMC(params, cov, nsteps, noise):
         
         # If accepted, set new parameters and move on to step.
         if accept: 
-            accepted_counter +=1
+            counts +=1
             params = trial_params
             chi_0 = trial_chisq
             
@@ -142,20 +127,17 @@ def MCMC(params, cov, nsteps, noise):
         chain[i,:] = params
         chi_vec[i] = chi_0
         
-    print('Out of {0} steps, {1} were accepted ({2}%).'.format(nsteps, accepted_counter, 100*accepted_counter/nsteps))
+    print('Out of', nsteps, 'steps,', counts, 'were accepted (', 100*counts/nsteps, '%)')
     
     return chain, chi_vec
 
 p_g = p_new1d
 step_size = np.sqrt(np.diag(cov_d))
 steps = 10000
+nparams_t = 6
 
 chain_t, chi_vec_t = MCMC(p_g, cov_d, steps, sc_sigma)
 
-nparams_t = len(p_g)
-
-# Run MCMC
-# chain, chisq = MCMC(pars_start, cov, 7000)
 
 # Save data
 data_new = np.empty((len(chi_vec_t), nparams_t + 1))
@@ -163,13 +145,11 @@ data_new[:,0] = chi_vec_t
 for i in range(nparams_t):
     data_new[:, i + 1] = chain_t[:, i]
 
-np.savetxt('chain_2.txt', data_new)
+# np.savetxt('chain_2.txt', data_new)
 
 
-# print("It's a success my friend")
 # print(chi_vec_t)
 
-# why?
 
 # print(cov_d)
 # nparams_t = len(p_g)
