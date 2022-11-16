@@ -6,4 +6,3 @@
 - Then, the section "Lot of Steps" displays the same solutions but with a greater amount of steps (100 for the LM fitter and 1000 for the MCMC). The code ran to get those results is from the PS5_code_lot.py.  
 - The outputs for the fewer steps' process is stored in the folder "Results" and the outputs for the larger steps' process is stored in the folder "Results_lot"
 
-<font size="10"> TEST </font>
